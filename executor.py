@@ -60,21 +60,24 @@ class Executor:
             self.__sentence__ = sentence
 
         def click(self) -> 'Executor':
-            return self.__sentence__.__executor__.__click__(self.__get_target_element__())
+            return self.__sentence__.__executor__.__click__(self.__element__)
 
         def select(self, index: int) -> 'Executor':
             self.__sentence__.__path__ = f'{self.__sentence__.__path__}/option[{index}]'
-            self.__get_target_element__().click()
+            self.__element__.click()
 
             return self.__sentence__.__executor__
     
         def send(self, message: str) -> 'Executor':
-            return self.__sentence__.__executor__.__send_keys__(self.__get_target_element__(), message)
+            element = self.__element__
+            element.clear()
+            return self.__sentence__.__executor__.__send_keys__(element, message)
 
         def drag(self, file_path: str) -> 'Executor':
-            return self.__sentence__.__executor__.__drag_file__(self.__get_target_element__(), file_path)
+            return self.__sentence__.__executor__.__drag_file__(self.__element__, file_path)
         
-        def __get_target_element__(self) -> WebElement:
+        @property
+        def __element__(self) -> WebElement:
             print(f'path: {self.__sentence__.__path__}')
             element = self.__sentence__.__executor__.__wait__.until(
                 self.__sentence__.__until__((self.__sentence__.__by__, self.__sentence__.__path__)))
