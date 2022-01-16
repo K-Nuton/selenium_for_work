@@ -9,8 +9,8 @@ from executor import Executor
 
 executor = Executor.open('http://www.htmq.com/html/select.shtml')
 
-executor.find('//*[@id="content_left"]/div[7]/form/p[2]/select').by(By.XPATH).And().select(1)\
-        .find('//*[@id="cse-search-box"]/div/input[4]').by(By.XPATH).And().send('うんこが美味しい')\
-        .find('//*[@id="cse-search-box"]/div/input[5]').by(By.XPATH).until(CLICKABLE).And().click()
+executor.find('//*[@id="content_left"]/div[7]/form/p[2]/select').by(By.XPATH).then.select(1)\
+        .find('//*[@id="cse-search-box"]/div/input[4]').by(By.XPATH).then.send('うんこが美味しい')\
+        .find('//*[@id="cse-search-box"]/div/input[5]').by(By.XPATH).until(CLICKABLE).then.click()
 
 time.sleep(3600)
