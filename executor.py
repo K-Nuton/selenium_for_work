@@ -1,3 +1,5 @@
+import os, time
+from typing import Callable
 from selenium.webdriver.common.by import By
 
 from selenium import webdriver
@@ -7,6 +9,16 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from webdriver_manager.chrome import ChromeDriverManager
+
+__JS_DROP_FILE__ = "var tgt=arguments[0],e=document.createElement('input');e.type='"+\
+"file';e.addEventListener('change',function(event){var dataTrans" +\
+"fer={dropEffect:'',effectAllowed:'all',files:e.files,items:{},t" +\
+"ypes:[],setData:function(format,data){},getData:function(format" +\
+"){}};var emit=function(event,target){var evt=document.createEve" +\
+"nt('Event');evt.initEvent(event,true,false);evt.dataTransfer=da"+\
+"taTransfer;target.dispatchEvent(evt);};emit('dragenter',tgt);em"+\
+"it('dragover',tgt);emit('drop',tgt);document.body.removeChild(e"+\
+");},false);document.body.appendChild(e);return e;"
 
 class Executor:
 
@@ -35,19 +47,31 @@ class Executor:
         return self
     
     def __drag_file__(self, sentence: 'Executor.__Sentence__', file_path: str) -> 'Executor':
-        pass
+        element = self.__get_element__(sentence)
+        temp: WebElement = self.__driver__.execute_script(__JS_DROP_FILE__, element)
+        temp.send_keys(os.path.abspath(file_path))
 
     def __select__(self, sentence: 'Executor.__Sentence__', index: int) -> 'Executor':
         sentence.__path__ = f'{sentence.__path__}/option[{index}]'
         self.__get_element__(sentence).click()
         
         return self
+    
+    def __exec_raw__(self, sentence: 'Executor.__Sentence__', func: Callable[[WebElement], None]) -> 'Executor':
+        func(self.__get_element__(sentence))
 
+        return self
+    
     def __get_element__(self, sentence: 'Executor.__Sentence__') -> WebElement:
         return self.__wait__.until(sentence.__until__((sentence.__by__, sentence.__path__)))
 
     def find(self, path: str) -> 'Executor.__Sentence__':
         return Executor.__Sentence__(self, path)
+        
+    def wait(self, mills: float) -> 'Executor':
+        time.sleep(mills / 1000)
+
+        return self
 
     class __Sentence__:
         def __init__(self, executor: 'Executor', path: str) -> None:
@@ -64,7 +88,6 @@ class Executor:
             self.__until__ = method
             return self
 
-        @property
         def then(self) -> 'Executor.__Proxy__':
             return Executor.__Proxy__(self)
 
@@ -83,9 +106,12 @@ class Executor:
 
         def drag(self, file_path: str) -> 'Executor':
             return self.__sentence__.__executor__.__drag_file__(self.__sentence__, file_path)
+        
+        def exec_raw(self, func: Callable[[WebElement], None]) -> 'Executor':
+            return self.__sentence__.__executor__.__exec_raw__(self.__sentence__, func)
 
 
 
 # //*[@id="pet-select"]
 # //*[@id="pet-select"]/option[3]
-# //*[@id="pet-select"]/option[2]
+# //*[@id="pet-select"]/option[2]“
